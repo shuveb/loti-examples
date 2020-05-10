@@ -9,8 +9,11 @@
 #define BUF_COUNT   32
 #define BUF_GRP_ID  0xBEEF
 
+char bufs[BUF_COUNT][BUF_SZ];
+
 int setup_buffers(struct io_uring *ring) {
     struct io_uring_sqe *sqe;
+    struct io_uring_cqe *cqe;
 
     sqe = io_uring_get_sqe(ring);
     io_uring_prep_provide_buffers(sqe, bufs, BUF_SZ, BUF_COUNT, BUF_GRP_ID, 0);
