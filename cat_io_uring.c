@@ -195,7 +195,6 @@ void read_from_cq(struct submitter *s) {
         /* Get the entry */
         cqe = &cring->cqes[head & *s->cq_ring.ring_mask];
         fi = (struct file_info*) cqe->user_data;
-        printf("res=%d\n", cqe->res);
         if (cqe->res < 0)
             fprintf(stderr, "Error: %s\n", strerror(abs(cqe->res)));
         int blocks = (int) fi->file_sz / BLOCK_SZ;
@@ -224,14 +223,12 @@ int submit_to_sq(char *file_path, struct submitter *s) {
     }
     struct app_io_sq_ring *sring = &s->sq_ring;
     unsigned index = 0, current_block = 0, tail = 0, next_tail = 0;
-    off_t offset = 0;
     off_t file_sz = get_file_size(file_fd);
     if (file_sz < 0)
         return 1;
     off_t bytes_remaining = file_sz;
     int blocks = (int) file_sz / BLOCK_SZ;
     if (file_sz % BLOCK_SZ) blocks++;
-    printf("File size: %ld blocks: %d\n", file_sz, blocks);
     fi = malloc(sizeof(*fi));
     if (!fi) {
         fprintf(stderr, "Unable to allocate memory\n");
@@ -248,7 +245,6 @@ int submit_to_sq(char *file_path, struct submitter *s) {
         off_t bytes_to_read = bytes_remaining;
         if (bytes_to_read > BLOCK_SZ)
             bytes_to_read = BLOCK_SZ;
-        offset += bytes_to_read;
         fi->iovecs[current_block].iov_len = bytes_to_read;
         void *buf;
         if( posix_memalign(&buf, BLOCK_SZ, BLOCK_SZ)) {
@@ -259,7 +255,6 @@ int submit_to_sq(char *file_path, struct submitter *s) {
         current_block++;
         bytes_remaining -= bytes_to_read;
     }
-    printf("Total number of iovec blocks: %d\n", current_block);
     /* Add our submission queue entry to the tail of the SQE ring buffer */
     next_tail = tail = *sring->tail;
     next_tail++;
