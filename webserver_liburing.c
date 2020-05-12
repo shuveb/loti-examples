@@ -8,6 +8,7 @@
 #include <liburing.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/utsname.h>
 
 #define SERVER_STRING           "Server: zerohttpd/0.1\r\n"
 #define DEFAULT_SERVER_PORT     8000
@@ -17,6 +18,9 @@
 #define EVENT_TYPE_ACCEPT       0
 #define EVENT_TYPE_READ         1
 #define EVENT_TYPE_WRITE        2
+
+#define MIN_KERNEL_VERSION      5
+#define MIN_MAJOR_VERSION       5
 
 struct request {
     int event_type;
@@ -56,14 +60,6 @@ const char *http_404_content = \
                                 "</html>";
 
 /*
- * Utility function to convert a string to lower case.
- * */
-
-void strtolower(char *str) {
-    for (; *str; ++str)
-        *str = (char)tolower(*str);
-}
-/*
  One function that prints the system call and the error details
  and then exits with error code 1. Non-zero meaning things didn't go well.
  */
@@ -72,6 +68,56 @@ void fatal_error(const char *syscall) {
     exit(1);
 }
 
+int check_kernel_version() {
+    struct utsname buffer;
+    char *p;
+    long ver[16];
+    int i=0;
+
+    if (uname(&buffer) != 0) {
+        perror("uname");
+        exit(EXIT_FAILURE);
+    }
+
+    p = buffer.release;
+
+    while (*p) {
+        if (isdigit(*p)) {
+            ver[i] = strtol(p, &p, 10);
+            i++;
+        } else {
+            p++;
+        }
+    }
+    printf("Minimum kernel version required is: %d.%d\n",
+            MIN_KERNEL_VERSION, MIN_MAJOR_VERSION);
+    if (ver[0] >= MIN_KERNEL_VERSION && ver[1] >= MIN_MAJOR_VERSION ) {
+        printf("Your kernel version is: %ld.%ld\n", ver[0], ver[1]);
+        return 0;
+    }
+    fprintf(stderr, "Error: your kernel version is: %ld.%ld\n",
+                    ver[0], ver[1]);
+    return 1;
+}
+
+void check_for_index_file() {
+    struct stat st;
+    int ret = stat("public/index.html", &st);
+    if(ret < 0 ) {
+        fprintf(stderr, "ZeroHTTPd needs the \"public\" directory to be "
+                "present in the current directory.\n");
+        fatal_error("stat: public/index.html");
+    }
+}
+
+/*
+ * Utility function to convert a string to lower case.
+ * */
+
+void strtolower(char *str) {
+    for (; *str; ++str)
+        *str = (char)tolower(*str);
+}
 /*
  * Helper function for cleaner looking code.
  * */
@@ -436,7 +482,12 @@ void sigint_handler(int signo) {
 }
 
 int main() {
+    if (check_kernel_version()) {
+        return EXIT_FAILURE;
+    }
+    check_for_index_file();
     int server_socket = setup_listening_socket(DEFAULT_SERVER_PORT);
+    printf("ZeroHTTPd listening on port: %d\n", DEFAULT_SERVER_PORT);
 
     signal(SIGINT, sigint_handler);
     io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
