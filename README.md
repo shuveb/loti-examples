@@ -9,7 +9,7 @@ cmake it used to build these examples. Please ensure it is installed on your sys
 $ mkdir build
 $ cd build
 $ cmake ..
-$ cmake --build ..
+$ cmake --build .
 ```
 
 This should place all executables inside of the ``build`` directory from where you can execute them.
