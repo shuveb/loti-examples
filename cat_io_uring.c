@@ -200,7 +200,7 @@ void read_from_cq(struct submitter *s) {
         int blocks = (int) fi->file_sz / BLOCK_SZ;
         if (fi->file_sz % BLOCK_SZ) blocks++;
         for (int i = 0; i < blocks; i++)
-            output_to_console(fi->iovecs->iov_base, fi->iovecs[i].iov_len);
+            output_to_console(fi->iovecs[i].iov_base, fi->iovecs[i].iov_len);
         head++;
     } while (1);
     *cring->head = head;
@@ -229,7 +229,7 @@ int submit_to_sq(char *file_path, struct submitter *s) {
     off_t bytes_remaining = file_sz;
     int blocks = (int) file_sz / BLOCK_SZ;
     if (file_sz % BLOCK_SZ) blocks++;
-    fi = malloc(sizeof(*fi));
+    fi = malloc(sizeof(*fi) + sizeof(struct iovec) * blocks);
     if (!fi) {
         fprintf(stderr, "Unable to allocate memory\n");
         return 1;
@@ -276,7 +276,7 @@ int submit_to_sq(char *file_path, struct submitter *s) {
         write_barrier();
     }
     /*
-     * Tell the kernel we have submitted events with the io_uring_enter() system'
+     * Tell the kernel we have submitted events with the io_uring_enter() system
      * call. We also pass in the IOURING_ENTER_GETEVENTS flag which causes the
      * io_uring_enter() call to wait until min_complete events (the 3rd param)
      * complete.
