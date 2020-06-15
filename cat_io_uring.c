@@ -145,7 +145,9 @@ int app_setup_uring(struct submitter *s) {
         cring_sz = sring_sz;
     }
 
-    /* Map in the submission queue ring buffer */
+    /* Map in the submission and completion queue ring buffers.
+     * Older kernels only map in the submission queue, though.
+     * */
     sq_ptr = mmap(0, sring_sz, PROT_READ | PROT_WRITE, 
             MAP_SHARED | MAP_POPULATE,
             s->ring_fd, IORING_OFF_SQ_RING);
@@ -157,7 +159,7 @@ int app_setup_uring(struct submitter *s) {
     if (p.features & IORING_FEAT_SINGLE_MMAP) {
         cq_ptr = sq_ptr;
     } else {
-        /* Map in the completion queue ring buffer */
+        /* Map in the completion queue ring buffer in older kernels separately */
         cq_ptr = mmap(0, cring_sz, PROT_READ | PROT_WRITE, 
                 MAP_SHARED | MAP_POPULATE,
                 s->ring_fd, IORING_OFF_CQ_RING);
