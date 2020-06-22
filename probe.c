@@ -38,6 +38,7 @@ static const char *op_strs[] = {
         "IORING_OP_SPLICE",
         "IORING_OP_PROVIDE_BUFFERS",
         "IORING_OP_REMOVE_BUFFERS",
+        "IORING_OP_TEE"
 };
 
 int main() {
