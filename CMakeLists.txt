@@ -23,5 +23,8 @@ target_link_libraries(eventfd uring pthread)
 
 add_executable(cat_io_uring cat_io_uring.c)
 
+add_executable(cat_liburing cat_liburing.c)
+target_link_libraries(cat_liburing uring)
+
 add_executable(webserver_liburing webserver_liburing.c)
 target_link_libraries(webserver_liburing uring)
