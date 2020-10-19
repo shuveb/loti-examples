@@ -44,7 +44,7 @@ int start_fixed_buffer_ops(struct io_uring *ring) {
 
     int ret = io_uring_register_files(ring, fds, 1);
     if(ret) {
-        fprintf(stderr, "Error registering buffers: %s", strerror(-ret));
+        fprintf(stderr, "Error registering files: %s", strerror(-ret));
         return 1;
     }
 
