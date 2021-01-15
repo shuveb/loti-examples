@@ -345,31 +345,26 @@ int submit_to_sq(char *file_path, struct submitter *s) {
 }
 
 int main(int argc, char *argv[]) {
-    struct submitter *s;
+    struct submitter s;
 
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
         return 1;
     }
 
-    s = malloc(sizeof(*s));
-    if (!s) {
-        perror("malloc");
-        return 1;
-    }
-    memset(s, 0, sizeof(*s));
+    memset(&s, 0, sizeof(s));
 
-    if(app_setup_uring(s)) {
+    if(app_setup_uring(&s)) {
         fprintf(stderr, "Unable to setup uring!\n");
         return 1;
     }
 
     for (int i = 1; i < argc; i++) {
-        if(submit_to_sq(argv[i], s)) {
+        if(submit_to_sq(argv[i], &s)) {
             fprintf(stderr, "Error reading file\n");
             return 1;
         }
-        read_from_cq(s);
+        read_from_cq(&s);
     }
 
     return 0;
