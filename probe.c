@@ -56,6 +56,6 @@ int main() {
             printf("no.\n");
 
     }
-    io_uring_free_probe(probe);
+    free(probe);
     return 0;
 }
