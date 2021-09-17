@@ -42,19 +42,28 @@ static const char *op_strs[] = {
 };
 
 int main() {
+    int nb_str_ops = sizeof(op_strs) / sizeof(op_strs[0]);
     struct utsname u;
     uname(&u);
     printf("You are running kernel version: %s\n", u.release);
     printf("This program won't work on kernel versions earlier than 5.6\n");
     struct io_uring_probe *probe = io_uring_get_probe();
     printf("Report of your kernel's list of supported io_uring operations:\n");
-    for (char i = 0; i < IORING_OP_LAST; i++ ) {
+    for (char i = 0; i < IORING_OP_LAST && i < nb_str_ops; i++ ) {
         printf("%s: ", op_strs[i]);
         if(io_uring_opcode_supported(probe, i))
             printf("yes.\n");
         else
             printf("no.\n");
-
+    }
+    if (IORING_OP_LAST > nb_str_ops) {
+        int nb_unknown_supported = 0;
+        for (int i = nb_str_ops; i < IORING_OP_LAST; i++) {
+        if (io_uring_opcode_supported(probe, i))
+            nb_unknown_supported++;
+        }
+        printf("Your liburing knows about operations I don't know about,\n"
+               "of which %d are supported by your kernel.\n", nb_unknown_supported);
     }
     free(probe);
     return 0;
