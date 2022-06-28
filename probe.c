@@ -4,6 +4,8 @@
 #include <liburing.h>
 #include <liburing/io_uring.h>
 
+#define SIZE(x)  (sizeof(x) / sizeof((x)[0]))
+
 static const char *op_strs[] = {
         "IORING_OP_NOP",
         "IORING_OP_READV",
@@ -38,7 +40,20 @@ static const char *op_strs[] = {
         "IORING_OP_SPLICE",
         "IORING_OP_PROVIDE_BUFFERS",
         "IORING_OP_REMOVE_BUFFERS",
-        "IORING_OP_TEE"
+        "IORING_OP_TEE",
+        "IORING_OP_SHUTDOWN",
+        "IORING_OP_RENAMEAT",
+        "IORING_OP_UNLINKAT",
+        "IORING_OP_MKDIRAT",
+        "IORING_OP_SYMLINKAT",
+        "IORING_OP_LINKAT",
+        "IORING_OP_MSG_RING",
+        "IORING_OP_FSETXATTR",
+        "IORING_OP_SETXATTR",
+        "IORING_OP_FGETXATTR",
+        "IORING_OP_GETXATTR",
+        "IORING_OP_SOCKET",
+        "IORING_OP_URING_CMD"
 };
 
 int main() {
@@ -48,7 +63,7 @@ int main() {
     printf("This program won't work on kernel versions earlier than 5.6\n");
     struct io_uring_probe *probe = io_uring_get_probe();
     printf("Report of your kernel's list of supported io_uring operations:\n");
-    for (char i = 0; i < IORING_OP_LAST; i++ ) {
+    for (char i = 0; i < SIZE(op_strs) ; i++ ) {
         printf("%s: ", op_strs[i]);
         if(io_uring_opcode_supported(probe, i))
             printf("yes.\n");
