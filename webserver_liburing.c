@@ -91,7 +91,7 @@ int check_kernel_version() {
     }
     printf("Minimum kernel version required is: %d.%d\n",
             MIN_KERNEL_VERSION, MIN_MAJOR_VERSION);
-    if (ver[0] >= MIN_KERNEL_VERSION && ver[1] >= MIN_MAJOR_VERSION ) {
+    if (ver[0] >= MIN_KERNEL_VERSION || ver[0] == MIN_KERNEL_VERSION && ver[1] >= MIN_MAJOR_VERSION ) {
         printf("Your kernel version is: %ld.%ld\n", ver[0], ver[1]);
         return 0;
     }
