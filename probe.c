@@ -47,6 +47,12 @@ int main() {
     printf("You are running kernel version: %s\n", u.release);
     printf("This program won't work on kernel versions earlier than 5.6\n");
     struct io_uring_probe *probe = io_uring_get_probe();
+    if (probe == NULL) 
+    {
+	    printf("io_uring_get_probe failed.\n");
+	    return 1; 
+
+    }
     printf("Report of your kernel's list of supported io_uring operations:\n");
     for (char i = 0; i < IORING_OP_LAST; i++ ) {
         printf("%s: ", op_strs[i]);
